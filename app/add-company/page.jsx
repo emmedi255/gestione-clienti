@@ -75,8 +75,9 @@ export default function DataForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl border border-gray-200">
+
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-white">
+      <div className="w-full max-w-md p-10 bg-white rounded-3xl shadow-xl border border-gray-200">
         <h1 className="text-2xl font-bold text-center text-gray-500 mb-6">Inserisci Dati Azienda</h1>
 
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}

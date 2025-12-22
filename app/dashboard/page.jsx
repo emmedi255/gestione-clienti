@@ -8,6 +8,7 @@ import {
   LogOut,
   PlusCircle,
   Trash2,
+  RefreshCw,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -23,38 +24,39 @@ export default function Dashboard() {
   const [error, setError] = useState("");
 
   /* ===================== FETCH DATI ===================== */
-  useEffect(() => {
-    if (!user) return;
+  const fetchData = async () => {
+  if (!user) return;
 
-    const fetchData = async () => {
-      setLoading(true);
-      setError("");
+  setLoading(true);
+  setError("");
 
-      try {
-        if (user.role === "OWNER") {
-          const res = await fetch("/api/customers");
-          const data = await res.json();
-          if (data.error) throw new Error(data.error);
-          setClients(data.clients || []);
-        } else {
-          const res = await fetch("/api/documents", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ user_id: user.id }),
-          });
-          const data = await res.json();
-          if (data.error) throw new Error(data.error);
-          setDocuments(data.documents || []);
-        }
-      } catch (err) {
-        setError("Errore nel caricamento dei dati");
-      } finally {
-        setLoading(false);
-      }
-    };
+  try {
+    if (user.role === "OWNER") {
+      const res = await fetch("/api/customers");
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setClients(data.clients || []);
+    } else {
+      const res = await fetch("/api/documents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: user.id }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setDocuments(data.documents || []);
+    }
+  } catch (err) {
+    setError("Errore nel caricamento dei dati");
+  } finally {
+    setLoading(false);
+  }
+};
 
-    fetchData();
-  }, [user]);
+useEffect(() => {
+  fetchData();
+}, [user]);
+
 
   /* ===================== HANDLERS ===================== */
   const handleLogout = () => {
@@ -136,7 +138,7 @@ const filteredClients = clients.filter((c) =>
         <StickyHeader title={`Ciao ${user.name}`} />
 
         <div className="p-6 md:p-10">
-            <div className="mb-8 flex justify-center">
+  <div className="mb-8 flex justify-center items-center gap-3">
   <div className="w-full max-w-md">
     <input
       type="text"
@@ -151,6 +153,22 @@ const filteredClients = clients.filter((c) =>
       "
     />
   </div>
+
+  <button
+    onClick={fetchData}
+    disabled={loading}
+    title="Ricarica lista"
+    className="
+      p-3 rounded-xl bg-white border border-gray-300
+      hover:bg-blue-50 text-blue-600
+      disabled:opacity-50 disabled:cursor-not-allowed
+      transition shadow-sm
+    "
+  >
+    <RefreshCw
+      className={`w-5 h-5 ${loading ? "animate-spin" : ""}`}
+    />
+  </button>
 </div>
           {loading ? (
            <div className="flex justify-center items-center mt-20">
@@ -158,7 +176,7 @@ const filteredClients = clients.filter((c) =>
             </div>
           ) : error ? (
             <p className="text-red-500">{error}</p>
-          ) : clients.length === 0 ? (
+          ) : filteredClients.length === 0 ? (
             <p className="text-gray-500">Nessun cliente trovato.</p>
           ) : (
             <div>
@@ -166,7 +184,7 @@ const filteredClients = clients.filter((c) =>
 
 
             <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-              {clients.map((c) => (
+              {filteredClients.map((c) => (
                 <li
                   key={c.id}
                   className="relative p-6 bg-white rounded-xl shadow hover:shadow-md transition border border-gray-200"
@@ -182,7 +200,7 @@ const filteredClients = clients.filter((c) =>
 
                   <div className="mb-3">
                     <p className="text-lg font-semibold text-gray-800">
-                      {c.company || "—"}
+                      {c.company || "Nessuna azienda inserita"}
                     </p>
                     <p className="text-sm font-medium text-gray-500">
                       {c.name}
