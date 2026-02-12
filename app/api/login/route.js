@@ -27,11 +27,10 @@ export async function POST(req) {
 
     const userProfile = await supabase
       .from("profiles")
-      .select("id, email, name, role")
+      .select("*")
       .eq("id", data.user.id)
       .single();
 
-      console.log(userProfile);
       
 
     const res = NextResponse.json({ user: userProfile.data });

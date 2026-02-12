@@ -12,7 +12,7 @@ export async function GET() {
     // 1️⃣ Clienti
     const { data: clients, error: clientsError } = await supabase
       .from("profiles")
-      .select("id, name, email")
+      .select("*")
       .eq("role", "CLIENTE");
 
     if (clientsError) throw clientsError;

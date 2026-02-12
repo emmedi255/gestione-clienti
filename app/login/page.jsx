@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useUser } from "../context/UserContext";
 import { Eye, EyeOff } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
+import Image from "next/image";
+
 
 
 const supabase = createClient(
@@ -88,7 +90,16 @@ const handleResetPassword = async () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-white font-sans">
+
+
       <div className="w-full max-w-md p-10 bg-white rounded-3xl shadow-xl border border-gray-200">
+        <Image
+  src="/logo.png"
+  alt="Logo"
+  width={150}
+  height={150}
+  className="mx-auto mb-6"
+/>
         {/* Titolo */}
         <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">
           Benvenuto

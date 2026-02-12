@@ -1,9 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import { generatePdf } from "@/lib/pdfGenerator";
-import { generateNominaPdf } from "@/lib/nominaAmministratoreGenerator";
-import { generateFornitorePdf } from "@/lib/fornitoreDocGenerator";
-import { generateTrattamentiPdf } from "@/lib/trattamentiCondominioGenerator";
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_SUPABASE_ROLE_KEY
@@ -24,11 +21,11 @@ const normalizeNumber = (v) => {
 
 export async function POST(req) {
   try {
-    const { user, form, condominioId } = await req.json();
-    const GENERAL_FORNITORE_ID = "11111111-1111-1111-1111-111111111111"
+    const { userId, form, condominioId } = await req.json();
+
     const condominioRow = 
     {
-            user_id: user.id,
+            user_id: userId,
             data: form.intestazione.data,
             condominio: form.intestazione.condominio,
             citta: form.intestazione.citta,
@@ -105,14 +102,17 @@ export async function POST(req) {
 
     
 
-    if (!user.id) {
+    if (!userId) {
       return NextResponse.json({ error: "Utente non loggato" }, { status: 400 });
     }
 
+    // Upsert del condominio
     const { data: condominio, error: condominioError } = await supabase
       .from("condomini")
       .upsert(
-        [condominioRow],
+        [condominioRow
+          ,
+        ],
         { onConflict: "condominio_id" }
       )
       .select()
@@ -145,169 +145,18 @@ export async function POST(req) {
         console.error("Errore join fornitori:", joinError);
         return NextResponse.json({ error: joinError.message }, { status: 500 });
       }
-
-      for(const fornitore of fornitori){
-
-        try{
-          const resultFornitore = await generateFornitorePdf({
-            user,
-            fornitore,
-            condominio_id: condominio_Id,
-            formData:form
-          })
-        
-          const fornitorePath = `pdfs/${condominio_Id}-${fornitore.fornitore_id}_nomina-responsabile-esterno-${fornitore.nome}-${fornitore.cognome}.pdf`
-
-  const {data:data, error: docError} = await supabase
-  .from("documents")
-  .upsert([{
-    user_id: user.id,
-    condominio_id: condominio_Id,
-    document_key: "nomina-responsabile-esterno",
-    fornitore_id: fornitore.fornitore_id,
-    type: "PDF",
-    file_url: fornitorePath
-  }], { 
-    onConflict: "user_id,condominio_id,document_key,fornitore_id"
-  });
-
-  
-
-          if (docError) {
-        console.error(`Errore PDF fornitore ${fornitore.fornitore_id}:`, docError);
-        }
-        
-        }catch(err){
-          console.error(`errore generazione documento fornitore ${fornitore.fornitore_id} :`,err );
-          
-        }
-      }
     }
 
-const fornitoriForm = form?.sezione8?.addedFornitori || [];
+    const fornitoriForm = form?.sezione8?.addedFornitori || [];
 const fornitoriIds = fornitoriForm.map(f => f.fornitore_id);
 
 await supabase
   .from("condomini_fornitori")
   .delete()
-  .eq("condominio_id", condominioId)
+  .eq("condominio_id", condominio_Id)
   .not("fornitore_id", "in", `(${fornitoriIds.join(",")})`);
 
- // Cancella i documenti dei fornitori rimossi
-await supabase
-  .from("documents")
-  .delete()
-  .eq("condominio_id", condominioId)
-  .not("fornitore_id", "in", `(${fornitoriIds.join(",")})`)
-  .eq("document_key", "nomina-responsabile-esterno"); // filtra solo i documenti dei fornitori
-
-
   
-function sanitizeFilename(name = '') {
-  return name.replace(/[^a-zA-Z0-9-_]/g, '-');
-}
-
-
-const result = await generatePdf({
-  user,
-  condominioId: condominio_Id,
-  formData: form,
-});
-    
-
-    const path = `pdfs/${condominio_Id}_informativa-privacy.pdf`;
-
-const { data, error } = await supabase
-  .from("documents")
-  .upsert(
-    [
-      {
-        user_id: user.id,
-        condominio_id: condominio_Id,
-        document_key: "informativa_privacy",
-        type: "PDF",
-        file_url: path,
-        fornitore_id: GENERAL_FORNITORE_ID
-      }
-    ],
-    {
-      onConflict: "user_id,condominio_id,document_key,fornitore_id"
-    }
-  );
-  
-const resultNomina = await generateNominaPdf({
-  user,
-  condominioId: condominio_Id,
-  formData: form,
-});
-    
-
-const pathNomina = `pdfs/${condominio_Id}_nomina-amministratore.pdf`;
-
- 
-
-const { dataNomina, errorNomina } = await supabase
-  .from("documents")
-  .upsert(
-    [
-      {
-        user_id: user.id,
-        condominio_id: condominio_Id,
-        document_key: "nomina_amministratore",
-        type: "PDF",
-        file_url: pathNomina,
-        fornitore_id: GENERAL_FORNITORE_ID
-      }
-    ],
-    {
-      onConflict: "user_id,condominio_id,document_key,fornitore_id"
-    }
-  );
-
-
-  if (errorNomina) {
-    console.error("Errore upsert documents Nomina Amministratore:", errorNomina);
-  }
-
-
-  const resultTrattamenti = await generateTrattamentiPdf({
-    user,
-    condominio_id: condominio_Id,
-    formData: form,
-  });
-  
-  
-  const pathTrattamenti = `pdfs/${condominio_Id}_registro-trattamenti-condominio.pdf`;
-
-const { dataTrattamenti, errorTrattamenti } = await supabase
-  .from("documents")
-  .upsert(
-    [
-      {
-        user_id: user.id,
-        condominio_id: condominio_Id,
-        document_key: "registro-trattamenti",
-        type: "PDF",
-        file_url: pathTrattamenti,
-        fornitore_id: GENERAL_FORNITORE_ID
-      }
-    ],
-    {
-      onConflict: "user_id,condominio_id,document_key,fornitore_id"
-    }
-  );
-
-if(dataTrattamenti) console.log("TRATTAMENTO DATI: ", dataTrattamenti);
-
-
-
-if (errorTrattamenti) {
-  console.log("Errore upsert documents:", errorTrattamenti);
-}
-
-
-
-
 
     return NextResponse.json({ success: true, data: condominio });
   } catch (err) {
