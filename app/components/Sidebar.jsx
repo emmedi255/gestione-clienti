@@ -1,56 +1,144 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
+import {
+  Home,
+  Building,
+  Users,
+  PlusCircle,
+  LogOut,
+  User,
+  Settings,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import clsx from "clsx";
 import { useUser } from "../context/UserContext";
-import { useRouter, usePathname } from "next/navigation";
-import { LogOut } from "lucide-react";
-import { menuConfig } from "../utils/menuConfig";
 
-export default function Sidebar() {
-  const { user, setUser, loading: userLoading } = useUser();
+export default function Sidebar({ open, onClose, role, onLogout }) {
   const router = useRouter();
-  const pathname = usePathname();
+  const { user } = useUser();
 
-  if (!user || userLoading) return null;
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
 
-  // Menu dinamico in base al ruolo
-  const menuItems = menuConfig[user.role] || [];
+  /* 👇 chiude dropdown cliccando fuori */
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
 
-  const handleLogout = () => {
-    setUser(null);
-    document.cookie = "session_user=; path=/; max-age=0";
-    router.push("/login");
-  };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const ownerMenu = [
+    { label: "Dashboard", icon: Building, path: "/dashboard" },
+    { label: "Nuovo Condominio", icon: PlusCircle, path: "/add-company" },
+    { label: "Clienti", icon: Users, path: "/condo-managers" },
+    { label: "Nuovo Amministratore", icon: User, path: "/signup" },
+  ];
+
+  const clientMenu = [
+    { label: "Dashboard", icon: Home, path: "/dashboard" },
+    { label: "Nuovo Condominio", icon: PlusCircle, path: "/add-company" },
+  ];
+
+  const menu = role === "OWNER" ? ownerMenu : clientMenu;
 
   return (
-    <aside className="w-64 bg-white border-r shadow-sm flex flex-col flex-shrink-0">
-      <div className="p-6 font-bold text-blue-900 text-lg">
-        Gestionale
-      </div>
+    <>
+      {/* Overlay mobile */}
+      {open && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+          onClick={onClose}
+        />
+      )}
 
-      <nav className="flex-1 flex flex-col gap-1 px-3">
-        {menuItems.map((item) => (
+      <aside
+        className={clsx(
+          "fixed top-23 left-0 h-[calc(100vh-64px)] w-64 bg-white border-r z-50",
+          "transform transition-transform duration-300",
+          open ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
+        )}
+      >
+        {/* ===== USER HEADER ===== */}
+        <div ref={profileRef} className="relative p-4 border-b">
           <button
-            key={item.href}
-            onClick={() => router.push(item.href)}
-            className={`text-left px-4 py-3 rounded-lg transition
-              ${pathname === item.href
-                ? "bg-blue-100 text-blue-700 font-semibold"
-                : "text-gray-600 hover:bg-gray-100"
-              }`}
+            onClick={() => setProfileOpen((v) => !v)}
+            className="flex items-center gap-3 w-full hover:bg-gray-100 p-2 rounded-lg transition"
           >
-            {item.label}
-          </button>
-        ))}
-      </nav>
+            <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
+              {user?.name?.charAt(0)}
+              {user?.cognome?.charAt(0)}
+            </div>
 
-      <div className="p-4 border-t">
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2 text-red-500 hover:text-red-600"
-        >
-          <LogOut size={18} /> Logout
-        </button>
-      </div>
-    </aside>
+            <div className="flex flex-col text-left">
+              <span className="text-sm font-semibold text-gray-800">
+                {user?.name} {user?.cognome}
+              </span>
+            </div>
+          </button>
+
+          {/* ===== DROPDOWN ===== */}
+          {profileOpen && (
+            <div className="absolute left-4 right-4 mt-2 bg-white border rounded-lg shadow-lg z-50">
+              <button
+                onClick={() => {
+                  router.push("/profile");
+                  setProfileOpen(false);
+                  onClose();
+                }}
+                className="flex items-center gap-3 px-4 py-3 w-full hover:bg-gray-100 text-sm text-gray-600"
+              >
+                <User className="w-4 h-4 text-gray-600" />
+                Visualizza profilo
+              </button>
+
+              <button
+                onClick={() => {
+                  router.push("/profile/edit");
+                  setProfileOpen(false);
+                  onClose();
+                }}
+                className="flex items-center gap-3 px-4 py-3 w-full hover:bg-gray-100 text-sm text-gray-600"
+              >
+                <Settings className="w-4 h-4 text-gray-600" />
+                Modifica dati
+              </button>
+
+              <hr />
+
+              <button
+                onClick={onLogout}
+                className="flex items-center gap-3 px-4 py-3 w-full text-red-600 hover:bg-red-50 text-sm"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* ===== MENU ===== */}
+        <nav className="flex flex-col gap-1 p-4">
+          {menu.map(({ label, icon: Icon, path }) => (
+            <button
+              key={label}
+              onClick={() => {
+                router.push(path);
+                onClose();
+              }}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 text-gray-700"
+            >
+              <Icon className="w-5 h-5 text-blue-600" />
+              {label}
+            </button>
+          ))}
+        </nav>
+      </aside>
+    </>
   );
 }

@@ -1,27 +1,44 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-
-
-export async function GET(req, { params }) {
-  // Destruttura l'id dal params
-  const supabase = createClient(
+const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_SUPABASE_ROLE_KEY
+  process.env.NEXT_SUPABASE_ROLE_KEY,
 );
-  const  id  = params; 
 
+/* ===================== DELETE ===================== */
+export async function DELETE(req, context) {
+  const params = await context.params; // ✅ UNWRAP Promise
+  const id = params.id;
 
-
-  const { data, error } = await supabase
-    .from("condomini")
-    .select("*")
-    .eq("condominio_id", id)
-    .single();
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 404 });
+  if (!id) {
+    return NextResponse.json(
+      { error: "ID condominio mancante" },
+      { status: 400 },
+    );
   }
 
-  return NextResponse.json(data);
+  try {
+    // 🔴 elimina eventuali documenti collegati
+    await supabase.from("documents").delete().eq("condominio_id", id);
+
+    // 🔴 elimina il condominio
+    const { error } = await supabase
+      .from("condomini")
+      .delete()
+      .eq("condominio_id", id);
+
+    if (error) throw error;
+
+    return NextResponse.json({
+      success: true,
+      message: "Condominio eliminato con successo",
+    });
+  } catch (error) {
+    console.error("Errore DELETE condominio:", error);
+    return NextResponse.json(
+      { error: error.message || "Errore server" },
+      { status: 500 },
+    );
+  }
 }

@@ -45,10 +45,16 @@ export function mapDbToForm(db) {
         serverLocale: {
           checked: db.elettronica_server_locale || false,
           autenticazione: db.elettronica_server_locale_autenticazione || false,
+          noAutenticazione: db.elettronica_server_locale_no_autenticazione || false,
+          password: db.elettronica_server_locale_password || false,
+          altro: db.elettronica_server_locale_password_altro
         },
         cloud: {
           checked: db.elettronica_cloud || false,
           autenticazione: db.elettronica_cloud_autenticazione || false,
+          noAutenticazione: db.elettronica_cloud_no_autenticazione || false,
+          password: db.elettronica_cloud_password || false,
+          altro: db.elettronica_cloud_password_altro
         },
       },
       cartacea: {
@@ -64,6 +70,7 @@ export function mapDbToForm(db) {
         antivirus: db.sicurezza_antivirus || false,
         firewall: db.sicurezza_firewall || false,
         screensaver: db.sicurezza_screensaver || false,
+        altro: db.sicurezza_altro || false,
       },
     },
 
