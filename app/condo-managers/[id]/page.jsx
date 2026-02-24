@@ -44,23 +44,6 @@ export default function AdminClientDashboard() {
     if (id) fetchData();
   }, [id]);
 
-  const handleDeleteCondominio = async (condominio_id) => {
-    if (!confirm("Sei sicuro di voler eliminare questo condominio?")) return;
-
-    try {
-      const res = await fetch(`/api/condomini/${condominio_id}`, {
-        method: "DELETE",
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      setCondomini((prev) =>
-        prev.filter((c) => c.condominio_id !== condominio_id),
-      );
-    } catch (err) {
-      alert("Errore durante l'eliminazione del condominio");
-    }
-  };
-
   const renderDocumentIcon = (type) =>
     type.toLowerCase() === "pdf" ? (
       <FileText className="text-red-500 w-5 h-5" />
@@ -93,20 +76,27 @@ export default function AdminClientDashboard() {
   return (
     <DashboardLayout>
       <div className="p-6 pt-0">
-        <h1 className="text-3xl font-bold mb-4 text-gray-600">
-          {client.ragione_sociale}
-        </h1>
-        <p className="text-gray-600">
-          {client.name} {client.cognome}
-        </p>
-        <p className="text-gray-400">{client.email}</p>
-        <div className="pt-4">
-          <input
-            placeholder="Cerca condominio..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full max-w-md mb-6 px-4 py-2 border border-gray-200 rounded-lg text-gray-600"
-          />
+        <div className=" top-0 p-0 bg-white z-50 pb-4">
+          <h1 className="text-xl font-bold mb-1 text-gray-600">
+            {client.ragione_sociale}
+          </h1>
+          <p className="text-gray-600">
+            {client.name} {client.cognome}
+          </p>
+          <p className="text-gray-400">{client.email}</p>
+          <p className="text-gray-400">
+            {client.sede_legale}-{client.citta_legale} {client.cap_legale}{" "}
+            {client.pr_legale}
+          </p>
+          <p className="text-gray-400">{client.telefono}</p>
+          <div className="pt-4">
+            <input
+              placeholder="Cerca condominio..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full h-full max-w-md px-4 py-2 border bg-white border-gray-200 rounded-lg text-gray-600"
+            />
+          </div>
         </div>
         {filteredCondomini.length === 0 ? (
           <p className="text-gray-400 text-center mt-10">
@@ -117,22 +107,8 @@ export default function AdminClientDashboard() {
             {filteredCondomini.map((condominio) => (
               <li
                 key={condominio.condominio_id}
-                onClick={() =>
-                  router.push(`/condomini/${condominio.condominio_id}`)
-                }
                 className="cursor-pointer p-5 bg-white rounded-xl shadow hover:shadow-md transition border relative"
               >
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteCondominio(condominio.condominio_id);
-                  }}
-                  title="Elimina condominio"
-                  className="absolute top-3 right-3 p-2 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 transition z-10"
-                >
-                  <Trash2 size={18} />
-                </button>
-
                 <p className="font-semibold text-gray-700 text-lg">
                   {condominio.condominio}
                 </p>

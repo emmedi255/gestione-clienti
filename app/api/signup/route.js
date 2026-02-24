@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { capitalizeWords } from "@/app/utils/formatters";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -35,6 +36,7 @@ export async function POST(req) {
       cap_studio,
       pr_studio,
       codice_univoco,
+      password_expiration,
     } = formData;
 
     // Crea utente in Supabase Auth
@@ -44,7 +46,7 @@ export async function POST(req) {
         password,
         email_confirm: true,
         user_metadata: {
-          name,
+          name: name,
           cognome,
           ragione_sociale,
           telefono,
@@ -52,13 +54,12 @@ export async function POST(req) {
       });
     if (userError) throw new Error(userError.message);
 
-    // Crea il profilo nel DB con TUTTI i campi
     const { error: profileError } = await supabase.from("profiles").insert([
       {
         id: userData.user.id,
-        name,
-        cognome,
-        ragione_sociale,
+        name: capitalizeWords(name),
+        cognome: capitalizeWords(cognome),
+        ragione_sociale: capitalizeWords(ragione_sociale),
         telefono,
         email,
         // ❌ NON salvare password in chiaro nel DB!
@@ -66,25 +67,27 @@ export async function POST(req) {
         partita_iva,
 
         // SEDE LEGALE
-        sede_legale,
-        citta_legale,
+        sede_legale: capitalizeWords(sede_legale),
+        citta_legale: capitalizeWords(citta_legale),
         pr_legale,
         cap_legale,
 
         // SEDE OPERATIVA
-        sede_operativa,
-        citta_operativa,
+        sede_operativa: capitalizeWords(sede_operativa),
+        citta_operativa: capitalizeWords(citta_operativa),
         pr_operativa,
         cap_operativa,
 
         // STUDIO
-        indirizzo_studio,
-        citta_studio,
+        indirizzo_studio: capitalizeWords(indirizzo_studio),
+        citta_studio: capitalizeWords(citta_studio),
         cap_studio,
         pr_studio,
         codice_univoco,
 
         role: "CLIENTE",
+
+        password_expiration,
       },
     ]);
 

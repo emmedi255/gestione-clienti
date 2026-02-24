@@ -166,7 +166,7 @@ export function FornitoriSection({
           onClick={() => setShowModal(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium flex-1 min-w-[120px]"
         >
-          Nuovo
+          Nuovo Fornitore
         </button>
       </div>
 

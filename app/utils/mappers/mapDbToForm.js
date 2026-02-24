@@ -3,6 +3,7 @@ export function mapDbToForm(db) {
     intestazione: {
       data: db.data || new Date().toISOString().split("T")[0],
       condominio: db.condominio || "",
+      condominio_indirizzo: db.condominio_indirizzo || "",
       citta: db.citta || "",
       cap: db.cap || "",
       provincia: db.provincia || "",
@@ -45,16 +46,17 @@ export function mapDbToForm(db) {
         serverLocale: {
           checked: db.elettronica_server_locale || false,
           autenticazione: db.elettronica_server_locale_autenticazione || false,
-          noAutenticazione: db.elettronica_server_locale_no_autenticazione || false,
+          noAutenticazione:
+            db.elettronica_server_locale_no_autenticazione || false,
           password: db.elettronica_server_locale_password || false,
-          altro: db.elettronica_server_locale_password_altro
+          altro: db.elettronica_server_locale_password_altro,
         },
         cloud: {
           checked: db.elettronica_cloud || false,
           autenticazione: db.elettronica_cloud_autenticazione || false,
           noAutenticazione: db.elettronica_cloud_no_autenticazione || false,
           password: db.elettronica_cloud_password || false,
-          altro: db.elettronica_cloud_password_altro
+          altro: db.elettronica_cloud_password_altro,
         },
       },
       cartacea: {
@@ -83,9 +85,10 @@ export function mapDbToForm(db) {
 
     sezione06: {
       dipendenti: db.dipendenti_autorizzati || false,
-      smartWorking: db.smart_working|| false,
+      smartWorking: db.smart_working || false,
       autorizzato: db.autorizzato_nomina || false,
       fornitori: db.fornitori_nomina || false,
+      altro: db.trattamento_altro || "",
     },
 
     sezione07: {
@@ -103,8 +106,7 @@ export function mapDbToForm(db) {
     },
 
     sezione8: {
-      addedFornitori:
-        db.condomini_fornitori?.map((cf) => cf.fornitori) || [],
+      addedFornitori: db.condomini_fornitori?.map((cf) => cf.fornitori) || [],
     },
   };
 }

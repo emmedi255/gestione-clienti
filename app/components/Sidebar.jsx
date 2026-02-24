@@ -34,14 +34,14 @@ export default function Sidebar({ open, onClose, role, onLogout }) {
   }, []);
 
   const ownerMenu = [
-    { label: "Dashboard", icon: Building, path: "/dashboard" },
+    { label: "I miei condomini", icon: Building, path: "/dashboard" },
     { label: "Nuovo Condominio", icon: PlusCircle, path: "/add-company" },
-    { label: "Clienti", icon: Users, path: "/condo-managers" },
+    { label: "Lista amministratori", icon: Users, path: "/condo-managers" },
     { label: "Nuovo Amministratore", icon: User, path: "/signup" },
   ];
 
   const clientMenu = [
-    { label: "Dashboard", icon: Home, path: "/dashboard" },
+    { label: "I miei condomini", icon: Home, path: "/dashboard" },
     { label: "Nuovo Condominio", icon: PlusCircle, path: "/add-company" },
   ];
 

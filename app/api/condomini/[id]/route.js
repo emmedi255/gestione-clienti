@@ -3,13 +3,11 @@ import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_SUPABASE_ROLE_KEY,
+  process.env.NEXT_SUPABASE_ROLE_KEY, // 🔐 service role
 );
 
-/* ===================== DELETE ===================== */
 export async function DELETE(req, context) {
-  const params = await context.params; // ✅ UNWRAP Promise
-  const id = params.id;
+  const { id } = await context.params;
 
   if (!id) {
     return NextResponse.json(
@@ -19,10 +17,31 @@ export async function DELETE(req, context) {
   }
 
   try {
-    // 🔴 elimina eventuali documenti collegati
+    /* 1️⃣ Recupero documenti collegati */
+    const { data: documents, error: fetchError } = await supabase
+      .from("documents")
+      .select("file_url")
+      .eq("condominio_id", id);
+
+    if (fetchError) throw fetchError;
+
+    /* 2️⃣ Elimino file dallo storage */
+    if (documents?.length) {
+      const filePaths = documents.map((d) => d.file_url).filter(Boolean);
+
+      if (filePaths.length > 0) {
+        const { error: storageError } = await supabase.storage
+          .from("documents") // 🔁 nome bucket
+          .remove(filePaths);
+
+        if (storageError) throw storageError;
+      }
+    }
+
+    /* 3️⃣ Elimino record documenti */
     await supabase.from("documents").delete().eq("condominio_id", id);
 
-    // 🔴 elimina il condominio
+    /* 4️⃣ Elimino condominio */
     const { error } = await supabase
       .from("condomini")
       .delete()
@@ -32,7 +51,7 @@ export async function DELETE(req, context) {
 
     return NextResponse.json({
       success: true,
-      message: "Condominio eliminato con successo",
+      message: "Condominio e documenti eliminati con successo",
     });
   } catch (error) {
     console.error("Errore DELETE condominio:", error);

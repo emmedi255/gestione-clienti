@@ -1,4 +1,6 @@
-export function capitalizeWords(str = "") {
+export function capitalizeWords(str) {
+  if (!str) return null;
+
   return str
     .toLowerCase()
     .trim()

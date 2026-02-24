@@ -32,7 +32,7 @@ Password: ${form.password}
     email: "",
     password: "",
     partita_iva: "",
-    role: "CLIENTE", // ← AGGIUNTO: default CLIENT
+    role: "CLIENTE",
     // SEDE LEGALE
     sede_legale: "",
     citta_legale: "",
@@ -146,21 +146,6 @@ Password: ${form.password}
     }
   };
 
-  const roles = [
-    {
-      value: "CLIENTE",
-      label: "Cliente",
-      icon: User,
-      description: "Gestisce i propri condomini",
-    },
-    {
-      value: "OWNER",
-      label: "Amministratore",
-      icon: Users,
-      description: "Gestisce condomini e amministratori",
-    },
-  ];
-
   return (
     <DashboardLayout>
       <div className="min-h-screen flex items-center justify-center text-gray-500">
@@ -197,47 +182,6 @@ Password: ${form.password}
                     className="px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required={["name", "email"].includes(key)}
                   />
-                ))}
-              </div>
-            </section>
-
-            {/* === RUOLO === ← NUOVA SEZIONE */}
-            <section>
-              <h2 className="text-2xl font-bold mb-6 border-b-2 border-indigo-200 pb-2">
-                Ruolo Utente
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {roles.map((role) => (
-                  <label key={role.value} className="cursor-pointer group">
-                    <input
-                      type="radio"
-                      name="role"
-                      value={role.value}
-                      checked={form.role === role.value}
-                      onChange={handleChange}
-                      className="sr-only peer"
-                      required
-                    />
-                    <div
-                      className={`
-                    p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 h-full
-                    peer-checked:bg-gradient-to-br peer-checked:from-indigo-50 peer-checked:to-purple-50
-                    peer-checked:border-indigo-300 peer-checked:shadow-md peer-checked:transform peer-checked:scale-[1.02]
-                    group-hover:border-indigo-200 group-hover:shadow-sm
-                    ${form.role === role.value ? "!bg-gradient-to-br !from-indigo-50 !to-purple-50 !border-indigo-300 !shadow-md !scale-[1.02]" : "border-gray-200 bg-white"}
-                  `}
-                    >
-                      <role.icon className="w-8 h-8 text-indigo-600 group-hover:scale-110 transition-transform" />
-                      <div className="text-center">
-                        <div className="font-semibold text-gray-900">
-                          {role.label}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {role.description}
-                        </div>
-                      </div>
-                    </div>
-                  </label>
                 ))}
               </div>
             </section>

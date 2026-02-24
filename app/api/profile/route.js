@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { capitalizeWords } from "@/app/utils/formatters";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -21,9 +22,9 @@ export async function POST(req) {
     if (password) authUpdate.password = password; // opzionale
 
     authUpdate.user_metadata = {
-      name: rest.name,
-      cognome: rest.cognome,
-      ragione_sociale: rest.ragione_sociale,
+      name: capitalizeWords(rest.name),
+      cognome: capitalizeWords(rest.cognome),
+      ragione_sociale: capitalizeWords(rest.ragione_sociale),
       telefono: rest.telefono,
     };
 

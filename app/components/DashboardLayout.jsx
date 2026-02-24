@@ -11,10 +11,10 @@ export default function DashboardLayout({ children }) {
   const { user, setUser } = useUser();
   const router = useRouter();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await fetch("/api/logout", { method: "POST" }); // 🔴 fondamentale
     setUser(null);
-    document.cookie = "session_user=; path=/; max-age=0";
-    router.push("/login");
+    router.replace("/login"); // ⬅️ replace, non push
   };
 
   return (
@@ -33,7 +33,9 @@ export default function DashboardLayout({ children }) {
           />
         )}
         {/* 👇 CONTENTO ACCANTO */}
-        <main className="flex-1 p-6 md:p-10 lg:ml-64">{children}</main>
+        <main className="flex-1 p-6 md:p-10 lg:ml-64 overflow-y-auto h-[calc(100vh-64px)]">
+          {children}
+        </main>
       </div>
     </div>
   );

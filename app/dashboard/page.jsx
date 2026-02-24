@@ -23,6 +23,11 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    if (!user) {
+      router.push("/login"); // rimanda a login
+    }
+  }, [user, router]);
   /* ===================== FETCH DATI ===================== */
   const fetchData = async () => {
     if (!user) return;
@@ -168,6 +173,9 @@ export default function Dashboard() {
 
                       <p className="font-semibold text-gray-700 text-lg">
                         {condominio.condominio}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {condominio.condominio_indirizzo}
                       </p>
                       <p className="text-sm text-gray-500">
                         {condominio.citta}, {condominio.provincia} -{" "}
