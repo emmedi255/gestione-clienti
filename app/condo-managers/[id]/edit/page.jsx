@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Eye, EyeOff, HomeIcon, User, Users } from "lucide-react";
-import DashboardLayout from "../components/DashboardLayout";
+import DashboardLayout from "../../../components/DashboardLayout";
 
 export default function EditAdminPage() {
   const router = useRouter();
