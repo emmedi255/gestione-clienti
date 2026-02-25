@@ -13,7 +13,6 @@ async function createUsers() {
     email_confirm: true,
   });
 
-  console.log("Utenti creati!");
 }
 
 createUsers();

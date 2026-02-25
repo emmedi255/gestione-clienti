@@ -12,7 +12,9 @@ export async function POST(req) {
   const { data: documents, error } = await supabase
     .from("documents")
     .select("*")
-    .eq("user_id", user_id);
+    .eq("user_id", user_id)
+    .eq("condominio_id")
+    .eq("type","PDF")
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });

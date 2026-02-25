@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
 );
 
 export async function POST(req) {
@@ -17,22 +17,37 @@ export async function POST(req) {
     });
 
     if (error) {
-      return NextResponse.json({ error: "Credenziali non valide" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Credenziali non valide" },
+        { status: 401 },
+      );
     }
 
     // Controlla se email confermata
     if (!data.user.email_confirmed_at) {
-      return NextResponse.json({ error: "Devi confermare la tua email" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Devi confermare la tua email" },
+        { status: 401 },
+      );
     }
 
     const userProfile = await supabase
       .from("profiles")
-      .select("id, email, name, role")
+      .select("*")
       .eq("id", data.user.id)
       .single();
+    console.log("USER", userProfile);
 
-      console.log(userProfile);
-      
+    if (userProfile.data.password_expiration) {
+      const now = new Date();
+      const expiration = new Date(userProfile.data.password_expiration);
+      if (now.getTime() > expiration.getTime()) {
+        return NextResponse.json(
+          { error: "La tua password è scaduta, contatta l'amministratore" },
+          { status: 403 },
+        );
+      }
+    }
 
     const res = NextResponse.json({ user: userProfile.data });
 

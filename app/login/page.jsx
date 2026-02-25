@@ -5,22 +5,19 @@ import { useRouter } from "next/navigation";
 import { useUser } from "../context/UserContext";
 import { Eye, EyeOff } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
-
+import Image from "next/image";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
 );
 
 export default function Login() {
-
-
-
   const [resetMessage, setResetMessage] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-    const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,67 +25,72 @@ export default function Login() {
   const { setUser } = useUser();
 
   const handleLogin = async (e) => {
-  e.preventDefault();
-  setError("");
-  setLoading(true);
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
-  try {
-    const res = await fetch("/api/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include", // ✅ FONDAMENTALE
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // ✅ FONDAMENTALE
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await res.json();
-    setLoading(false);
+      const data = await res.json();
+      setLoading(false);
 
-    if (!res.ok) {
-      setError(data.error || "Errore di login");
+      if (!res.ok) {
+        setError(data.error || "Errore di login");
+        return;
+      }
+
+      setUser(data.user);
+      router.push("/dashboard");
+    } catch (err) {
+      setLoading(false);
+      setError("Errore durante il login");
+      console.error(err);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!email) {
+      setError("Inserisci prima la tua email");
       return;
     }
 
-    setUser(data.user);
-    router.push("/dashboard");
-  } catch (err) {
-    setLoading(false);
-    setError("Errore durante il login");
-    console.error(err);
-  }
-};
+    setResetLoading(true);
+    setResetMessage("");
+    setError("");
 
-const handleResetPassword = async () => {
-  if (!email) {
-    setError("Inserisci prima la tua email");
-    return;
-  }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
 
-  setResetLoading(true);
-  setResetMessage("");
-  setError("");
+    setResetLoading(false);
 
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/reset-password`,
-  });
-
-  setResetLoading(false);
-
-  if (error) {
-    setError(error.message);
-  } else {
-    setResetMessage(
-      "Ti abbiamo inviato un'email per reimpostare la password"
-    );
-  }
-};
-
-
+    if (error) {
+      setError(error.message);
+    } else {
+      setResetMessage(
+        "Ti abbiamo inviato un'email per reimpostare la password",
+      );
+    }
+  };
 
   const goToSignup = () => router.push("/signup");
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-white font-sans">
       <div className="w-full max-w-md p-10 bg-white rounded-3xl shadow-xl border border-gray-200">
+        <Image
+          src="/logo.png"
+          alt="Logo"
+          width={150}
+          height={150}
+          className="mx-auto mb-6"
+        />
         {/* Titolo */}
         <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">
           Benvenuto
@@ -99,11 +101,10 @@ const handleResetPassword = async () => {
           <p className="mb-4 text-red-500 text-center font-medium">{error}</p>
         )}
         {resetMessage && (
-  <p className="mb-4 text-green-600 text-center font-medium">
-    {resetMessage}
-  </p>
-)}
-
+          <p className="mb-4 text-green-600 text-center font-medium">
+            {resetMessage}
+          </p>
+        )}
 
         {/* Form */}
         <form onSubmit={handleLogin} className="flex flex-col gap-6">
@@ -115,7 +116,7 @@ const handleResetPassword = async () => {
             className="px-5 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400 text-gray-800 transition"
             required
           />
-           <div className="relative">
+          <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
               placeholder="Password"
@@ -132,16 +133,7 @@ const handleResetPassword = async () => {
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
-          <div className="text-right">
-  <button
-    type="button"
-    onClick={handleResetPassword}
-    disabled={resetLoading}
-    className="text-sm text-blue-600 hover:underline disabled:opacity-50"
-  >
-    {resetLoading ? "Invio email..." : "Password dimenticata?"}
-  </button>
-</div>
+          <div className="text-right"></div>
 
           <button
             type="submit"
@@ -151,17 +143,6 @@ const handleResetPassword = async () => {
             {loading ? "Caricamento..." : "Accedi"}
           </button>
         </form>
-
-        {/* Link secondari */}
-        <p className="mt-6 text-center text-gray-500">
-          Non hai un account?{" "}
-          <button
-            onClick={goToSignup}
-            className="text-blue-600 font-medium hover:underline"
-          >
-            Registrati
-          </button>
-        </p>
       </div>
     </div>
   );
