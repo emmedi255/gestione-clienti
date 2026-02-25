@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_SUPABASE_ROLE_KEY // SERVICE ROLE (solo server)
+  process.env.NEXT_SUPABASE_ROLE_KEY, // SERVICE ROLE (solo server)
 );
 
 export async function GET() {
@@ -12,8 +12,7 @@ export async function GET() {
     // 1️⃣ Clienti
     const { data: clients, error: clientsError } = await supabase
       .from("profiles")
-      .select("*")
-      .eq("role", "CLIENTE");
+      .select("*");
 
     if (clientsError) throw clientsError;
 
@@ -30,7 +29,7 @@ export async function GET() {
       .in("user_id", clientIds);
 
     const companyMap = Object.fromEntries(
-      (companies || []).map((c) => [c.user_id, c.company])
+      (companies || []).map((c) => [c.user_id, c.company]),
     );
 
     // 3️⃣ Documenti + signed URLs
@@ -52,7 +51,7 @@ export async function GET() {
               ...doc,
               signedUrl: signed?.signedUrl || null,
             };
-          })
+          }),
         );
 
         return {
@@ -60,7 +59,7 @@ export async function GET() {
           company: companyMap[client.id] || null,
           documents: documentsWithSignedUrls,
         };
-      })
+      }),
     );
 
     return NextResponse.json({ clients: clientsWithDocs });
@@ -68,7 +67,7 @@ export async function GET() {
     console.error("CUSTOMERS API ERROR:", err);
     return NextResponse.json(
       { error: "Impossibile caricare i clienti" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

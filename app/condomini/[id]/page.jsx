@@ -12,26 +12,22 @@ export default function EditCondominioPage() {
   const id = params.id;
 
   // Trova il condominio direttamente dal context
-  const condominio = condomini.find(c => c.condominio_id === id);
-
+  const condominio = condomini.find((c) => c.condominio_id === id);
 
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
 
- useEffect(() => {
-  async function loadCondominio() {
-    if (condominio) {
-      setForm(mapDbToForm(condominio));
-      setLoading(false);
-      return;
+  useEffect(() => {
+    async function loadCondominio() {
+      if (condominio) {
+        setForm(mapDbToForm(condominio));
+        setLoading(false);
+        return;
+      }
     }
 
-   
-  }
-
-  loadCondominio();
-}, [condominio, id]);
-
+    loadCondominio();
+  }, [condominio, id]);
 
   if (loading) return <p>Caricamento...</p>;
   if (!form) return <p>Condominio non trovato</p>;

@@ -1,15 +1,25 @@
-// /app/api/logout/route.ts
-import { cookies } from "next/headers";
+// app/api/logout/route.ts
 import { NextResponse } from "next/server";
 
 export async function POST() {
   try {
-    const cookieStore = cookies();
-    cookieStore.delete("session_user"); // cancella il cookie della sessione
+    // 🔹 Crea la risposta
+    const res = NextResponse.json({ success: true });
 
-    return NextResponse.json({ success: true }, { status: 200 });
+    // 🔹 Cancella il cookie session_user
+    res.cookies.set({
+      name: "session_user",
+      value: "",
+      path: "/",
+      maxAge: 0,
+    });
+
+    return res;
   } catch (err) {
-    console.error("Errore /api/logout:", err);
-    return NextResponse.json({ success: false }, { status: 500 });
+    console.error("Errore logout:", err);
+    return NextResponse.json(
+      { success: false, message: err.message },
+      { status: 500 },
+    );
   }
 }

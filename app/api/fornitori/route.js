@@ -1,8 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
+import { capitalizeWords } from "../../utils/formatters";
+import { provinceItaliane } from "../../utils/provinceItaliane";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_SUPABASE_ROLE_KEY
+  process.env.NEXT_SUPABASE_ROLE_KEY,
 );
 
 export async function GET(req) {
@@ -10,7 +12,10 @@ export async function GET(req) {
     const url = new URL(req.url);
     const userId = url.searchParams.get("userId");
 
-    if (!userId) return new Response(JSON.stringify({ error: "userId mancante" }), { status: 400 });
+    if (!userId)
+      return new Response(JSON.stringify({ error: "userId mancante" }), {
+        status: 400,
+      });
 
     const { data, error } = await supabase
       .from("fornitori")
@@ -18,12 +23,17 @@ export async function GET(req) {
       .eq("user_id", userId)
       .order("created_at", { ascending: true });
 
-    if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400 });
+    if (error)
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 400,
+      });
 
     return new Response(JSON.stringify({ data }), { status: 200 });
   } catch (err) {
     console.error("GET fornitori error:", err);
-    return new Response(JSON.stringify({ error: "Errore interno server" }), { status: 500 });
+    return new Response(JSON.stringify({ error: "Errore interno server" }), {
+      status: 500,
+    });
   }
 }
 export async function DELETE(req) {
@@ -32,10 +42,9 @@ export async function DELETE(req) {
     const id = searchParams.get("id");
 
     if (!id) {
-      return new Response(
-        JSON.stringify({ error: "ID fornitore mancante" }),
-        { status: 400 }
-      );
+      return new Response(JSON.stringify({ error: "ID fornitore mancante" }), {
+        status: 400,
+      });
     }
 
     const { error } = await supabase
@@ -52,31 +61,59 @@ export async function DELETE(req) {
     return new Response(JSON.stringify({ success: true }), { status: 200 });
   } catch (err) {
     console.error(err);
-    return new Response(
-      JSON.stringify({ error: "Errore interno server" }),
-      { status: 500 }
-    );
+    return new Response(JSON.stringify({ error: "Errore interno server" }), {
+      status: 500,
+    });
   }
 }
 export async function POST(req) {
   try {
-    const { userId, nome, indirizzo, cf, attivita } = await req.json();
+    const {
+      userId,
+      nome,
+      cognome,
+      ragioneSociale,
+      indirizzo,
+      cap,
+      citta,
+      provincia,
+      cf,
+      attivita,
+    } = await req.json();
 
     if (!userId || !nome) {
-      return new Response(JSON.stringify({ error: "Dati mancanti" }), { status: 400 });
+      return new Response(JSON.stringify({ error: "Dati mancanti" }), {
+        status: 400,
+      });
     }
 
     const { data, error } = await supabase
       .from("fornitori")
-      .insert({ user_id: userId, nome, indirizzo, cf, attivita })
+      .insert({
+        user_id: userId,
+        nome: capitalizeWords(nome),
+        indirizzo: capitalizeWords(indirizzo),
+        citta: capitalizeWords(citta),
+        cf,
+        attivita: capitalizeWords(attivita),
+        cognome: capitalizeWords(cognome),
+        ragione_sociale: capitalizeWords(ragioneSociale),
+        cap,
+        provincia,
+      })
       .select()
       .single();
 
-    if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400 });
+    if (error)
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 400,
+      });
 
     return new Response(JSON.stringify({ data }), { status: 200 });
   } catch (err) {
     console.error("POST fornitori error:", err);
-    return new Response(JSON.stringify({ error: "Errore interno server" }), { status: 500 });
+    return new Response(JSON.stringify({ error: "Errore interno server" }), {
+      status: 500,
+    });
   }
 }
